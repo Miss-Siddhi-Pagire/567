@@ -1,0 +1,100 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_california_housing
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+
+data = fetch_california_housing()
+df = pd.DataFrame(data.data, columns=data.feature_names)
+df['PRICE'] = data.target
+
+X = df[['MedInc']]
+y = df['PRICE']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+model = LinearRegression()
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+print("MSE:", mean_squared_error(y_test, y_pred))
+print("R2 Score:", r2_score(y_test, y_pred))
+
+plt.scatter(X_test, y_test, color='blue', label='Actual')
+plt.plot(X_test, y_pred, color='red', label='Predicted')
+plt.xlabel('Median Income')
+plt.ylabel('House Price')
+plt.title('Linear Regression: Income vs Price')
+plt.legend()
+plt.show()
+plt.show() 
+
+############################################################################################
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+data = pd.read_csv('Social_Network_Ads.csv')
+print(data.head())
+
+X = data[['Age', 'EstimatedSalary']]
+y = data['Purchased']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+cm = confusion_matrix(y_test, y_pred)
+TN, FP, FN, TP = cm.ravel()
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+
+print("Confusion Matrix:\n", cm)
+print(f"True Positives (TP): {TP}")
+print(f"False Positives (FP): {FP}")
+print(f"True Negatives (TN): {TN}")
+print(f"False Negatives (FN): {FN}")
+print(f"Accuracy: {accuracy:.2f}")
+print(f"Error Rate: {error_rate:.2f}")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
+
+############################################################################################
+
+1. Naïve Bayes Classification on iris.csv
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+data = pd.read_csv("iris.csv")
+
+X = data.drop("species", axis=1)
+y = data["species"]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+conf_matrix = confusion_matrix(y_test, y_pred, labels=model.classes_)
+print("Confusion Matrix:\n", conf_matrix)
+
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision = precision_score(y_test, y_pred, average='macro')
+recall = recall_score(y_test, y_pred, average='macro')
+
+print("\nMetrics:")
+print(f"Accuracy: {accuracy:.2f}")
+print(f"Error Rate: {error_rate:.2f}")
+print(f"Precision (Macro Avg): {precision:.2f}")
+print(f"Recall (Macro Avg): {recall:.2f}")
