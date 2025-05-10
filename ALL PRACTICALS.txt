@@ -1,0 +1,576 @@
+PRACTICAL NO:1
+# 1. Import necessary libraries
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+
+# 2. Load dataset (Make sure StudentsPerformance.csv is in the working directory)
+df = pd.read_csv("StudentsPerformance.csv")
+
+# 3. Check for missing values
+print("Missing values in each column:")
+print(df.isnull().sum())
+
+# 4. Get statistical summary of numeric features
+print("\nStatistical Summary:")
+print(df.describe())
+
+# 5. Check the shape (rows, columns) of the dataset
+print("\nShape of the dataset:", df.shape)
+
+# 6. Check data types of each column
+print("\nData types of each column:")
+print(df.dtypes)
+
+# 7. Convert 'writing score' from int to float (as per exam requirement)
+df['writing score'] = df['writing score'].astype(float)
+
+# 8. Print updated data types after conversion
+print("\nUpdated Data Types:")
+print(df.dtypes)
+
+# 9. Display dataset info
+print("\nDataset Info:")
+df.info()
+
+# 10. Convert categorical variables to numeric using Label Encoding
+le = LabelEncoder()
+
+df['gender'] = le.fit_transform(df['gender'])  # male: 1, female: 0 (or vice versa)
+df['race/ethnicity'] = le.fit_transform(df['race/ethnicity'])
+df['parental level of education'] = le.fit_transform(df['parental level of education'])
+df['lunch'] = le.fit_transform(df['lunch'])
+df['test preparation course'] = le.fit_transform(df['test preparation course'])
+
+# 11. Display first 5 rows of the updated DataFrame
+print("\nFirst 5 rows of encoded dataset:")
+print(df.head())
+
+# 12. Final check on the dataset
+print("\nFinal Dataset Info:")
+df.info()
+
+
+
+
+
+PRACTICAL N0:2
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+# Step 1: Create Sample Dataset
+
+data = {
+    'Student_ID': [1, 2, 3, 4, 5, 6],
+    'Math_Score': [85, 90, np.nan, 40, 200, 95],       # Contains missing and an outlier
+    'English_Score': [78, 82, 75, 60, 58, None],       # Contains missing value
+    'Science_Score': [88, 92, 85, np.nan, 65, 100],    # Contains missing value
+    'Attendance_%': [95, 80, 85, 50, 110, 88]          # 110% is inconsistent
+}
+
+# Convert to DataFrame
+df = pd.DataFrame(data)
+print("Original Dataset:\n", df)
+
+
+# Step 2: Check and Handle Missing Values
+
+print("\nMissing Values:\n", df.isnull().sum())
+
+# Fill missing values with column means (safe way)
+df.fillna({
+    'Math_Score': df['Math_Score'].mean(),
+    'English_Score': df['English_Score'].mean(),
+    'Science_Score': df['Science_Score'].mean()
+}, inplace=True)
+
+print("\nDataset after filling missing values:\n", df)
+
+
+# Step 3: Handle Inconsistencies
+
+# Attendance cannot be more than 100
+df['Attendance_%'] = np.where(df['Attendance_%'] > 100, 100, df['Attendance_%'])
+
+print("\nDataset after fixing inconsistencies:\n", df)
+
+
+# Step 4: Detect and Handle Outliers using IQR
+
+def treat_outliers(column):
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower = Q1 - 1.5 * IQR
+    upper = Q3 + 1.5 * IQR
+    df[column] = np.where(df[column] < lower, lower,
+                np.where(df[column] > upper, upper, df[column]))
+
+# Apply on numeric columns except Student_ID
+for col in ['Math_Score', 'English_Score', 'Science_Score', 'Attendance_%']:
+    treat_outliers(col)
+
+print("\nDataset after treating outliers:\n", df)
+
+ 
+# Step 5: Data Transformation (Log)
+
+# Log transformation to reduce skewness of Math_Score
+df['Log_Math_Score'] = np.log1p(df['Math_Score'])  # log1p handles log(0)
+
+print("\nMath Score vs Log Transformed:\n", df[['Math_Score', 'Log_Math_Score']])
+
+# Plot histograms before and after transformation
+plt.figure(figsize=(10, 4))
+plt.subplot(1, 2, 1)
+sns.histplot(df['Math_Score'], kde=True)
+plt.title('Before Transformation')
+
+plt.subplot(1, 2, 2)
+sns.histplot(df['Log_Math_Score'], kde=True)
+plt.title('After Log Transformation')
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+PRACTICAL NO:3
+# Step 1: Create the students_data.csv file (optional if you're generating it);
+import pandas as pd
+
+# Sample data dictionary
+data = {
+    "Name": ["Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Heidi"],
+    "Age": [20, 21, 22, 20, 23, 21, 22, 24],
+    "Marks": [85, 78, None, 92, 67, 88, None, 95]
+}
+
+# Create DataFrame and save to CSV
+df = pd.DataFrame(data)
+df.to_csv("students_data.csv", index=False)
+
+
+
+# 1. Load the CSV file
+df = pd.read_csv("students_data.csv")
+
+# 2. Display the first 5 rows
+print("First 5 rows:")
+df.head()
+
+# 3. Get the number of rows and columns
+rows, cols = df.shape
+print(f"\nTotal Rows: {rows}, Total Columns: {cols}")
+
+# 4. List all column names
+print("\nColumn Names:")
+df.columns.tolist()
+
+# 5. Check for missing values
+print("\nMissing Values:")
+df.isnull().sum()
+
+# 6. Replace missing values in "Marks" with average
+average_marks = df["Marks"].mean()
+df["Marks"] = df["Marks"].fillna(average_marks)
+print("\nMissing values in 'Marks' column replaced with average.")
+
+# 7. Select rows where Marks > 80
+high_scorers = df[df["Marks"] > 80]
+print("\nStudents with Marks > 80:")
+print(high_scorers)
+
+
+
+
+PRACTICAL N0:4
+# 1: Summary statistics grouped by a categorical variable
+import pandas as pd
+
+# Load Iris dataset
+df = pd.read_csv("Iris (1).csv")
+
+# Grouped summary statistics for 'sepal_length' by 'species'
+grouped_stats = df.groupby('Species')['SepalLengthCm'].agg(['mean', 'median', 'min', 'max', 'std'])
+
+print(grouped_stats)
+
+# Create a list with sepal_length values for each species
+grouped_list = df.groupby('Species')['SepalLengthCm'].apply(list)
+print("\nList of sepal_length values for each species:\n")
+print(grouped_list)
+
+
+# 2: Statistical details for each species
+import numpy as np
+
+
+sentosa=df[df['Species']=='setosa']
+sentosa.describe()
+
+versicolor =df[df['Species'] == 'versicolor']
+versicolor.describe()
+
+virginica = df[df['Species'] == 'virginica']
+virginica.describe()
+
+
+
+
+PRACTICAL NO:5
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Load the Boston Housing Dataset from the original source
+df=pd.read_csv("HousingData.csv")
+
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2, random_state=42)
+
+# Create and train the Linear Regression model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f"Mean Squared Error: {mse}")
+print(f"R-squared: {r2}")
+
+
+
+
+PRACTICAL NO:6
+# Step 1: Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+from google.colab import files
+
+
+# Step 4: Load the dataset
+df = pd.read_csv('Social_Network_Ads.csv')
+print("\nFirst 5 rows of the dataset:")
+print(df.head())
+
+# Step 5: Select input features and target column
+X = df[['Age', 'EstimatedSalary']]  # Independent variables
+y = df['Purchased']                # Dependent variable
+
+# Step 6: Split data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+
+# Step 7: Train the logistic regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# Step 8: Predict on the test set
+y_pred = model.predict(X_test)
+
+# Step 9: Compute evaluation metrics
+cm = confusion_matrix(y_test, y_pred)
+TP = cm[1, 1]
+TN = cm[0, 0]
+FP = cm[0, 1]
+FN = cm[1, 0]
+
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+
+# Step 10: Display results
+print("\nConfusion Matrix:")
+print(cm)
+print(f"\nTrue Positives (TP): {TP}")
+print(f"False Positives (FP): {FP}")
+print(f"True Negatives (TN): {TN}")
+print(f"False Negatives (FN): {FN}")
+
+print(f"\nAccuracy: {accuracy:.2f}")
+print(f"Error Rate: {error_rate:.2f}")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
+
+
+
+
+
+PRACTICAL N0:7
+# Step 1: Import libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+# Step 2: Load the dataset
+df = pd.read_csv('Iris (1).csv')
+
+# Step 3: Features and labels
+X = df.drop('Species', axis=1)
+y = df['Species']
+
+# Step 4: Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Step 5: Train model
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+# Step 6: Predict
+y_pred = model.predict(X_test)
+
+# Step 7: Confusion Matrix
+labels = model.classes_  # ['setosa', 'versicolor', 'virginica']
+cm = confusion_matrix(y_test, y_pred, labels=labels)
+print("Confusion Matrix:\n", cm)
+
+# Simple TP, FP, FN, TN calculation per class
+print("\nTP, FP, FN, TN for each class (simplified):")
+for i, label in enumerate(labels):
+    TP = cm[i, i]
+    FP = cm[:, i].sum() - TP
+    FN = cm[i, :].sum() - TP
+    TN = cm.sum() - (TP + FP + FN)
+    print(f"{label}: TP={TP}, FP={FP}, FN={FN}, TN={TN}")
+
+# Step 8: Performance Metrics
+acc = accuracy_score(y_test, y_pred)
+err = 1 - acc
+prec = precision_score(y_test, y_pred, average='macro')
+rec = recall_score(y_test, y_pred, average='macro')
+
+
+print(f"\nAccuracy: {acc:.2f}")
+print(f"Error Rate: {err:.2f}")
+print(f"Precision: {prec:.2f}")
+print(f"Recall: {rec:.2f}")
+
+
+
+PRACTICAL N0:8
+import seaborn as sns
+import matplotlib.pyplot as plt
+titanic = sns.load_dataset('titanic')
+print("Sample data:")
+print(titanic.head())
+
+
+# Plot 1: Survival Count by Gender
+sns.countplot(x='sex', hue='survived', data=titanic)
+plt.title("Survival Count by Gender")  
+plt.xlabel("Gender")                   
+plt.ylabel("Count")                   
+plt.legend(title="Survived (1=Yes, 0=No)")  
+plt.show()  
+
+# Plot 2: Survival Count by Passenger Class
+sns.countplot(x='class', hue='survived', data=titanic)
+plt.title("Survival by Passenger Class")  
+plt.xlabel("Class")                      
+plt.ylabel("Count")                       
+plt.show()  # Display the plot
+
+
+# Plot 3: Fare Distribution Histogram
+sns.histplot(titanic['fare'], kde=True, bins=30, color='green')
+plt.title("Distribution of Ticket Fare") 
+plt.xlabel("Fare")                       
+plt.ylabel("Number of Passengers")       
+plt.show()  # Display the plot
+
+
+
+
+
+PRACTICAL NO:9
+!pip install nltk --quiet
+
+import nltk
+from nltk.tokenize import TreebankWordTokenizer
+from nltk.corpus import stopwords
+from nltk import pos_tag
+from nltk.stem import PorterStemmer
+from nltk.stem import WordNetLemmatizer
+
+# Fix: Download the updated resource versions
+nltk.download('averaged_perceptron_tagger_eng', force=True)
+nltk.download('stopwords', force=True)
+nltk.download('wordnet', force=True)
+nltk.download('omw-1.4', force=True)
+
+# Sample document
+text = "Text analytics is the process of extracting meaning from text. It helps in understanding patterns and insights."
+
+print("Original Text:\n", text)
+
+# 1. Tokenization using Treebank tokenizer
+tokenizer = TreebankWordTokenizer()
+tokens = tokenizer.tokenize(text)
+print("\n1. Tokens:\n", tokens)
+
+# 2. POS Tagging
+pos_tags = pos_tag(tokens)
+print("\n2. POS Tags:\n", pos_tags)
+
+# 3. Stop Words Removal
+stop_words = set(stopwords.words('english'))
+filtered_tokens = [word for word in tokens if word.lower() not in stop_words]
+print("\n3. After Stop Words Removal:\n", filtered_tokens)
+
+# 4. Stemming
+stemmer = PorterStemmer()
+stemmed = [stemmer.stem(word) for word in filtered_tokens]
+print("\n4. After Stemming:\n", stemmed)
+
+# 5. Lemmatization
+lemmatizer = WordNetLemmatizer()
+lemmatized = [lemmatizer.lemmatize(word) for word in filtered_tokens]
+print("\n5. After Lemmatization:\n", lemmatized)
+
+
+
+
+PRACTICAL NO:10
+import nltk
+
+# Ensure necessary resources are downloaded
+nltk.download('punkt')
+nltk.download('wordnet')
+
+# Sample text
+text = "Text analytics is the process of extracting meaning from text. It helps in understanding patterns and insights."
+print("Original Text:\n", text)
+
+# 1. Tokenization using regexp_tokenize (fix pattern to capture words and punctuation properly)
+from nltk.tokenize import regexp_tokenize
+tokens = regexp_tokenize(text, pattern=r'\w+|[^\w\s]+')
+print("\n1. Tokens:\n", tokens)
+
+# 2. Stemming
+from nltk.stem import PorterStemmer
+stemmer = PorterStemmer()
+stemmed = [stemmer.stem(word) for word in tokens]
+print("\n2. After Stemming:\n", stemmed)
+
+# 3. Lemmatization
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+lemmatized = [lemmatizer.lemmatize(word) for word in tokens]
+print("\n3. After Lemmatization:\n", lemmatized)
+
+
+
+PRACTICAL NO:12
+# Import necessary libraries
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load Titanic dataset
+df = sns.load_dataset('titanic')
+
+# Create a boxplot of age by gender and survival status
+sns.boxplot(data=df, x='sex', y='age', hue='survived')
+
+# Add title and display the plot
+plt.title("Age Distribution by Gender and Survival")
+plt.show()
+
+
+
+# Observations :
+Observations and Inferences from the Box Plot:
+
+
+1. Gender-Based Age Distribution:
+
+
+The box plot reveals that there may be differences in the age distribution between males and females.
+
+
+Females: The median age for females might be lower than for males, and there may be fewer outliers in terms of extreme ages.
+
+
+Males: The age distribution for males could be wider, with a higher range of ages, as there may have been more adult males on the ship compared to females.
+
+2. 
+Survival Status and Age Distribution:
+
+
+When the survival status (whether the individual survived or not) is factored in, we can observe potential patterns in the age distribution:
+
+
+Survivors (hue = 1): The age distribution for survivors may show a tendency for certain age groups to have a higher survival rate. For example, you might see that children and young adults (both male and female) have a higher likelihood of surviving, as this was a well-documented aspect of the Titanic disaster (women and children were given priority in lifeboats).
+
+
+Non-Survivors (hue = 0): Non-survivors could show a different age distribution, with more adults and possibly a higher median age, indicating that older individuals had a lower chance of survival.
+
+
+3. Outliers:
+
+
+The presence of outliers may indicate individuals who were much younger or older than most passengers. For instance, there might be a few older individuals (perhaps elderly passengers) or very young children who stand out in the data.
+
+
+4. Overall Inference:
+
+
+From the box plot, we can infer that age played a significant role in survival rates. Younger passengers (especially children) and females had a higher chance of surviving the Titanic disaster, which is reflected in the distinct median values and spread for survivors compared to non-survivors.
+
+
+
+
+
+
+PRACTICAL NO:13
+# Import necessary libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import zscore
+
+df = pd.read_csv('Iris (1).csv')
+
+# List features and their types
+print("Feature Types:\n", df.dtypes)
+
+# Create histograms for each feature
+df.iloc[:, :-1].hist(figsize=(10, 8), bins=15)
+plt.suptitle('Feature Distributions - Histograms')
+plt.show()
+
+# Create boxplots for each feature
+plt.figure(figsize=(12, 8))
+for i, col in enumerate(df.columns[:-2]):
+    plt.subplot(2, 2, i+1)
+    sns.boxplot(x='Species', y=col, data=df)
+    plt.title(f'Boxplot of {col}')
+plt.tight_layout()
+plt.show()
+
+
+
+# Outlier detection using Z-score
+z = zscore(df.iloc[:, :-1])
+outliers = (z > 3) | (z < -3)
+print("\nOutliers per feature (Z-score > 3):\n", outliers.sum())
+
+# Summary statistics
+print("\nSummary Statistics:\n", df.describe())
+
+
